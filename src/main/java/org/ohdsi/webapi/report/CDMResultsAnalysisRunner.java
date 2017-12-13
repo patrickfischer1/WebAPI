@@ -18,6 +18,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import org.springframework.dao.DataAccessException;
 
 public class CDMResultsAnalysisRunner {
 
@@ -119,11 +120,36 @@ public class CDMResultsAnalysisRunner {
 
     public CDMAchillesHeel getHeelResults(JdbcTemplate jdbcTemplate, Source source) {
         CDMAchillesHeel heel = new CDMAchillesHeel();
-        String achillesSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/achillesheel/sqlAchillesHeel.sql", source);
-        if (achillesSql != null) {
-            heel.setMessages(jdbcTemplate.query(achillesSql, new CDMAttributeMapper()));
+        String achillesSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/achillesheel/sqlAchillesHeel.sql", source);        
+        if (achillesSql != null) {            
+            if (checkTableExists(jdbcTemplate, source)) {      
+                
+                String annotationSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/achillesheel/sqlAchillesHeelAnnotations.sql", source);
+                List<CDMAttribute> messages = jdbcTemplate.query(annotationSql, new CDMAttributeMapper());
+                heel.setMessages(messages);
+            }
+            else {
+                List<CDMAttribute> messages = jdbcTemplate.query(achillesSql, new CDMAttributeMapper());
+                heel.setMessages(messages);
+            }
         }
         return heel;
+    }
+    
+    private Boolean checkTableExists(JdbcTemplate jdbcTemplate, Source source) throws DataAccessException
+    {
+        String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+        
+        try {
+            String sql = ResourceHelper.GetResourceAsString("/resources/annotations/sql/checkMetaTable.sql");
+            sql = SqlRender.renderSql(sql, new String[] { "results_database_schema" }, new String[] { tableQualifier });
+            sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+            jdbcTemplate.execute(sql);
+            return true;
+        }
+        catch (DataAccessException e) {
+            return false;
+        }
     }
 
     public CDMDataDensity getDataDensityResults(JdbcTemplate jdbcTemplate, Source source) {

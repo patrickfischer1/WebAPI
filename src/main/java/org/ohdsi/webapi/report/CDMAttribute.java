@@ -3,6 +3,8 @@ package org.ohdsi.webapi.report;
 public class CDMAttribute {
 	private String attributeName;
 	private String attributeValue;
+        private String attributeStatus;
+        private String attributeComments;
 	
 	/**
 	 * @return the attributeName
@@ -28,6 +30,29 @@ public class CDMAttribute {
 	public void setAttributeValue(String attributeValue) {
 		this.attributeValue = attributeValue;
 	}
-	
+        /**
+	 * @return the attributeStatus
+	 */
+	public String getAttributeStatus() {
+		return attributeStatus;
+	}
+	/**
+	 * @param attributeStatus the attributeStatus to set
+	 */
+	public void setAttributeStatus(String attributeStatus) {
+		this.attributeStatus = attributeStatus;
+	}
+	/**
+	 * @return the attributeComments
+	 */
+	public String getAttributeComments() {
+		return attributeComments;
+	}
+	/**
+	 * @param attributeComments the attributeComments to set
+	 */
+	public void setAttributeComments(String attributeComments) {
+		this.attributeComments = attributeComments;
+	}
 	
 }

@@ -13,6 +13,22 @@ public class CDMAttributeMapper implements RowMapper<CDMAttribute> {
 		CDMAttribute attribute = new CDMAttribute();
 		attribute.setAttributeName(rs.getString("ATTRIBUTE_NAME"));
 		attribute.setAttributeValue(rs.getString("ATTRIBUTE_VALUE"));
+                
+                try {
+                    attribute.setAttributeStatus(rs.getString("ATTRIBUTE_STATUS"));
+                }
+                catch (SQLException e) {
+                    attribute.setAttributeStatus("");
+                }
+                
+                try {
+                    attribute.setAttributeComments(rs.getString("ATTRIBUTE_COMMENTS"));
+                }
+                catch (SQLException e) {
+                    attribute.setAttributeComments("");
+                }
+                
+                
 		return attribute;
 	}
 
