@@ -9184,7 +9184,7 @@ select distinct c1.cohort_definition_id,
 INTO #raw_4008
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id
-	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_dat
+	and vo1.visit_start_date >= c1.cohort_start_date and vo1.visit_start_date <= c1.cohort_end_date
 ;
 -- period_id, visit_concept_id, visit_type_concept_id
 select cohort_definition_id
