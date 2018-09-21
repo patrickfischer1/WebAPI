@@ -2,6 +2,9 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.sql.ResultSet;
@@ -48,9 +51,11 @@ import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * @author fdefalco
@@ -66,7 +71,13 @@ public class VocabularyService extends AbstractDaoService {
 
   @Value("${datasource.driverClassName}")
   private String driver;
-  
+
+  @Value("${solr.enabled}")
+  private boolean solrEnabled;
+
+  @Value("${solr.url}")
+  private String solrUrl;
+
   private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override
     public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
@@ -478,8 +489,49 @@ public class VocabularyService extends AbstractDaoService {
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
     Tracker.trackActivity(ActivityType.Search, query);
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+		if (solrEnabled) {
+			ArrayList<Concept> concepts = new ArrayList<>();
+			try {
+
+				RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+				String searchEndpoint = solrUrl + "/vocab/select?q=query:*" + query + "*&rows=20000";
+				ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
+				String responseBody = responseJson.getBody();
+				ObjectMapper mapper = new ObjectMapper();
+				JsonNode solrDocument = mapper.readTree(responseBody);
+				ArrayNode documentArray = (ArrayNode) solrDocument.at("/response/docs");
+				JsonNode n;
+				for (JsonNode conceptNode : documentArray) {
+					Concept c = new Concept();
+					c.conceptName = conceptNode.get("concept_name").asText();
+					c.conceptId = conceptNode.get("id").asLong();
+					c.conceptClassId = conceptNode.get("concept_class_id").asText();
+					c.conceptCode = conceptNode.get("concept_code").asText();
+					c.domainId = conceptNode.get("domain_id").asText();
+					n = conceptNode.get("invalid_reason");
+					if (n != null) {
+						c.invalidReason = conceptNode.get("invalid_reason").asText();
+					} else {
+						c.invalidReason = "";
+					}
+					n = conceptNode.get("standard_concept");
+					if (n != null) {
+						c.standardConcept = conceptNode.get("standard_concept").asText();
+					} else {
+						c.standardConcept = "";
+					}
+					c.vocabularyId = conceptNode.get("vocabulary_id").asText();
+					concepts.add(c);
+				}
+			} catch (Exception ex) {
+				log.debug("failed during solr search" + ex.getMessage());
+			}
+
+			return concepts;
+		} else {
+			PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
+			return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+		}
   }
 
   protected PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
