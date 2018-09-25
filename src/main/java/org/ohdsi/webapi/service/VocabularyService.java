@@ -72,13 +72,13 @@ public class VocabularyService extends AbstractDaoService {
   @Value("${datasource.driverClassName}")
   private String driver;
 
-  @Value("${solr.enabled}")
+  @Value("${solr.enabled:0}")
   private boolean solrEnabled;
 
-  @Value("${solr.url}")
+  @Value("${solr.url:#{null}}")
   private String solrUrl;
 
-  @Value("${solr.coreName}")
+  @Value("${solr.coreName:#{null}}")
   private String solrCoreName;
 
   private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
