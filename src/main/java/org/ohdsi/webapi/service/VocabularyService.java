@@ -78,6 +78,9 @@ public class VocabularyService extends AbstractDaoService {
   @Value("${solr.url}")
   private String solrUrl;
 
+  @Value("${solr.coreName}")
+  private String solrCoreName;
+
   private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override
     public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
@@ -494,7 +497,7 @@ public class VocabularyService extends AbstractDaoService {
 			try {
 
 				RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-				String searchEndpoint = solrUrl + "/vocab/select?q=query:*" + query + "*&rows=20000";
+				String searchEndpoint = solrUrl + "/" + solrCoreName + "/select?q=query:*" + query + "*&rows=20000";
 				ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
 				String responseBody = responseJson.getBody();
 				ObjectMapper mapper = new ObjectMapper();
