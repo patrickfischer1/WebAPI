@@ -72,13 +72,13 @@ public class VocabularyService extends AbstractDaoService {
   @Value("${datasource.driverClassName}")
   private String driver;
 
-  @Value("${solr.enabled:0}")
+  @Value("${solr.enabled}")
   private boolean solrEnabled;
 
-  @Value("${solr.url:#{null}}")
+  @Value("${solr.url}")
   private String solrUrl;
 
-  @Value("${solr.coreName:#{null}}")
+  @Value("${solr.coreName}")
   private String solrCoreName;
 
   private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
@@ -492,7 +492,12 @@ public class VocabularyService extends AbstractDaoService {
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
     Tracker.trackActivity(ActivityType.Search, query);
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-		if (solrEnabled) {
+
+    System.out.println("Solr Enabled: " + solrEnabled);
+    System.out.println("Solr URL: " + solrUrl);
+    System.out.println("Solr CoreName: " + solrCoreName);
+
+    if (solrEnabled) {
 			ArrayList<Concept> concepts = new ArrayList<>();
 			try {
 

@@ -128,6 +128,11 @@
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
+
+    <!-- SOLR Properties !-->
+    <solr.enabled>false</solr.enabled>
+    <solr.url>http://localhost:8983/solr</solr.url>
+    <solr.coreName>vocab</solr.coreName>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
