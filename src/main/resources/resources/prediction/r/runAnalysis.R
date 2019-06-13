@@ -49,7 +49,8 @@ tryCatch({
                 createValidationPackage = F,
                 packageResults = T,
                 minCellCount = 5,
-                cdmVersion = 5)
+                cdmVersion = 5,
+                verbosity = 'TRACE')
 
         populateShinyApp(shinyDirectory = file.path(getwd(), 'shiny', 'PLPViewer'), resultDirectory = outputFolder)
 
