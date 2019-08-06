@@ -77,6 +77,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
     Integer defId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
     String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
+    String expressionSql = null;
 
     try {
       DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
@@ -127,15 +128,19 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
           jdbcTemplate.update(psr.getSql(), psr.getSetter());
         }
       }
-
-      String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
+      log.info("Prepared to Expression transformation");
+      expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
+      log.info("Built expression SQL");
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
+      log.info("Rendered SQL");
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, oracleTempSchema);
+      log.info("Translated SQL");
       String[] sqls = SqlSplit.splitSql(translatedSql);
       log.info("Generated Cohort SQL");
       return sqls;
     } catch (Exception e) {
       log.error("Failed to generate cohort: {}", defId, e);
+      log.error(expressionSql);
       throw new RuntimeException(e);
     }
   }
