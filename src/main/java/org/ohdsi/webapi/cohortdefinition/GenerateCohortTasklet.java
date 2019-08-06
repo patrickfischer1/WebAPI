@@ -70,6 +70,8 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
   @Override
   protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
+    log.info("Started Cohort SQL generation");
+
     String[] result = new String[0];
 
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
@@ -129,7 +131,9 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
       String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, oracleTempSchema);
-      return SqlSplit.splitSql(translatedSql);
+      String[] sqls = SqlSplit.splitSql(translatedSql);
+      log.info("Generated Cohort SQL");
+      return sqls;
     } catch (Exception e) {
       log.error("Failed to generate cohort: {}", defId, e);
       throw new RuntimeException(e);
