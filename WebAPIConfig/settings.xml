@@ -9,7 +9,7 @@
     <id>webapi-postgresql</id>
     <properties>
       <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-      <datasource.url>jdbc:postgresql://omopdb:5432/OHDSI</datasource.url>
+      <datasource.url>jdbc:postgresql://imipvri-datastorage.med.uni-giessen.de:5432/OHDSI</datasource.url>
       <datasource.username>ohdsi_admin_user</datasource.username>
       <datasource.password>admin1</datasource.password>
       <datasource.dialect>postgresql</datasource.dialect>
